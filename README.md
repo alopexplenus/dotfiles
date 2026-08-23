@@ -33,6 +33,32 @@ yadm clone git@github.com:alopexplenus/dotfiles.git
 
 yadm will lay the files down in your home directory. Review before applying.
 
+### Desktop and headless machines
+
+Common files are tracked at their normal paths. Desktop-only files use yadm's
+`##desktop` alternate suffix and are materialized only for the `desktop`
+class. The current desktop-only files are the tmux pair, Tilda configuration
+and autostart, monitor movement, the `tm` and `wk` workstation helpers, and
+voice dictation configuration and tooling. `eyes` and `gdo` remain common.
+
+Set the local class before materializing alternates:
+
+```sh
+yadm config local.class desktop
+yadm alt
+```
+
+For a headless host, select the `headless` class instead:
+
+```sh
+yadm config local.class headless
+yadm alt
+```
+
+Use `yadm alt` to inspect alternate handling. When changing classes, review
+previously materialized files and the resulting yadm update, since files from a
+previous class may need to be removed separately.
+
 If you just want to browse or borrow a single file, clone it as a normal repo:
 
 git clone git@github.com:alopexplenus/dotfiles.git
