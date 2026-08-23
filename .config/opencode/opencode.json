@@ -1,0 +1,31 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "plugin": ["superpowers@git+https://github.com/obra/superpowers.git", "opencode-notify"],
+  "model": "claude-sonnet-4-6",
+  "share": "disabled",
+  "lsp": {
+    "pyright": {
+      "command": ["pyright-langserver", "--stdio"],
+      "extensions": [".py", ".pyi"]
+    }
+  },
+  "permission": {
+    "edit": "allow",
+    "bash": {
+      "*": "allow",
+      "rm -rf *": "deny",
+      "rm -fr *": "deny",
+      "rm -rf /": "deny",
+      "sudo rm -rf *": "deny",
+      "git push --force*": "deny",
+      "git push -f *": "deny",
+      "dd *": "deny",
+      "sudo dd *": "deny",
+      "mkfs*": "deny",
+      "sudo mkfs*": "deny",
+      "shutdown*": "deny",
+      "reboot*": "deny",
+      ":(){ :|:& };:": "deny"
+    }
+  }
+}

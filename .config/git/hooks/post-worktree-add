@@ -1,0 +1,33 @@
+#!/bin/bash
+# Git post-worktree-add hook: Symlink 'mystuff' and copy '.env'
+
+new_worktree_path="$1"
+
+# Find the main repository git common directory
+common_dir=$(git -C "$new_worktree_path" rev-parse --git-common-dir 2>/dev/null)
+# Sibling root directory
+main_repo_root=$(dirname "$common_dir")
+
+# Safe check to make sure main repo root path is resolved
+if [ -n "$main_repo_root" ] && [ -d "$main_repo_root" ]; then
+
+    # 1. Symlink mystuff
+    if [ -d "$main_repo_root/mystuff" ]; then
+        if [ ! -e "$new_worktree_path/mystuff" ]; then
+            ln -s "$main_repo_root/mystuff" "$new_worktree_path/mystuff"
+            echo "✔ Symlinked 'mystuff' from main repository."
+        else
+            echo "ℹ 'mystuff' already exists in the target worktree. Skipping symlink."
+        fi
+    fi
+
+    # 2. Copy .env
+    if [ -f "$main_repo_root/.env" ]; then
+        if [ ! -f "$new_worktree_path/.env" ]; then
+            cp "$main_repo_root/.env" "$new_worktree_path/.env"
+            echo "✔ Copied '.env' from main repository."
+        else
+            echo "ℹ '.env' already exists in the target worktree. Skipping copy to prevent overwriting."
+        fi
+    fi
+fi

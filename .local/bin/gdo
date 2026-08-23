@@ -1,0 +1,39 @@
+#!/bin/sh
+
+# No-op if not an interactive terminal
+if [ ! -t 1 ]; then
+  exit 0
+fi
+
+if [ -z "$1"  ]; then
+    base_branch=$(git remote show origin | sed -n '/HEAD branch/s/.*: //p')
+    echo "main branch: >>$base_branch<<"
+else
+    base_branch=$1
+fi
+
+
+current_branch=$(git rev-parse --abbrev-ref HEAD)
+
+if [ "$current_branch" = "$base_branch" ]; then
+    echo "On base branch ($base_branch); diffing against HEAD."
+    diff_range=HEAD
+else
+    diff_range="$base_branch..."
+fi
+
+files=$(git diff $diff_range --name-only | while read fname; do
+    if [ -f "$fname" ]; then
+        printf '%s\n' "$fname"
+    else
+        echo "Skipping (not a regular file): $fname" >&2
+    fi
+done)
+
+if [ -z "$files" ]; then
+    echo "No changed files to open."
+    exit 0
+fi
+
+echo "$files" | tr '\n' '\0' | xargs -0 nvim
+

@@ -1,0 +1,33 @@
+[include]
+    path = ~/.gitconfig.local
+[core]
+    excludesFile = ~/.gitignore_global
+    pager = delta
+    hooksPath = ~/.config/git/hooks
+[interactive]
+    diffFilter = delta  --syntax-theme 1337
+[delta]
+    navigate = true    # use n and N to move between diff sections
+    side-by-side = true
+[pull]
+    rebase = true
+[merge]
+    conflictstyle = diff3
+[diff]
+    colorMoved = default
+[url "ssh://git@github.com/"]
+    insteadOf = https://github.com/
+[init]
+    defaultBranch = main
+[commit]
+	gpgsign = true
+[push]
+    autoSetupRemote = true
+[credential "https://github.com"]
+	helper = 
+	helper = !/usr/bin/gh auth git-credential
+[credential "https://gist.github.com"]
+	helper = 
+	helper = !/usr/bin/gh auth git-credential
+[gpg]
+	format = ssh

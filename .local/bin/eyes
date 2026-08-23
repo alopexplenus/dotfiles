@@ -1,0 +1,122 @@
+#!/usr/bin/env zsh
+# Two grayscale "eyes" (each 16x10 blocks, rounded corners) with a one-time blink.
+# Based on mystuff/maxim.png. Run directly anytime; no guards here.
+
+emulate -L zsh
+setopt no_unset
+
+typeset -gr EYE_W=16          # columns per eye
+typeset -gr EYE_H=10          # rows per eye
+typeset -gr GAP='    '        # 4 spaces between eyes
+typeset -gr PAD='    '        # 4 spaces of left margin for the whole art
+typeset -gr BLOCK='\u259d'    # upper right block
+
+# Resting per-row gray hex, index 1..10 (top..bottom).
+typeset -ga REST_GRAY=(
+  '#3a3a3a' '#5f5f5f' '#8a8a8a' '#a6a6a6' '#b3b3b3'
+  '#b3b3b3' '#b3b3b3' '#b3b3b3' '#b3b3b3' '#b3b3b3'
+)
+
+# hex '#rrggbb' -> "r;g;b"
+_eyes_rgb() {
+  local hex=${1#\#}
+  printf '%d;%d;%d' 0x${hex[1,2]} 0x${hex[3,4]} 0x${hex[5,6]}
+}
+
+# Is cell (row,col) a blanked corner cell? Subtle rounding: blank a 3-cell
+# L-shape at each of the four corners. On the extreme rows (top/bottom) blank
+# k=2 cells at each end; on the adjacent rows blank k=1. Derived from
+# EYE_W/EYE_H so it stays correct if the dimensions change.
+_eyes_masked() {
+  local row=$1 col=$2 k=0
+  if (( row == 1 || row == EYE_H )); then
+    k=2
+  elif (( row == 2 || row == EYE_H - 1 )); then
+    k=1
+  fi
+  (( k == 0 )) && return 1
+  (( col <= k || col > EYE_W - k ))
+}
+
+# Build one eye's worth of cells for a given row, blanking corner cells.
+_eyes_row_blocks() {
+  local row=$1 col out=''
+  for (( col = 1; col <= EYE_W; col++ )); do
+    if _eyes_masked $row $col; then
+      out+=' '
+    else
+      out+=$BLOCK
+    fi
+  done
+  print -rn -- "$out"
+}
+
+# Print one full 10-row frame given an array name of 10 hex grays.
+_eyes_frame() {
+  local -a grays=("${(@P)1}")
+  local row rgb line blocks
+  for (( row = 1; row <= EYE_H; row++ )); do
+    rgb=$(_eyes_rgb ${grays[row]})
+    blocks=$(_eyes_row_blocks $row)
+    line="${PAD}\e[38;2;${rgb}m${blocks}${GAP}${blocks}\e[0m"
+    printf "%b\n" "$line"
+  done
+}
+
+# Given a lid position L (rows 1..L rendered as the dim "closed" gray),
+# build a 10-element gray array: rows <= L use the dimmest gray, rows > L
+# fall back toward the resting fade. This makes a dim band sweep down/up.
+typeset -gr LID_CLOSED_GRAY='#2a2a2a'
+
+_eyes_grays_for_lid() {
+  # $1 = lid row L (0 = fully open/resting). Fills global array _EYES_CUR.
+  local L=$1 row
+  _EYES_CUR=()
+  for (( row = 1; row <= EYE_H; row++ )); do
+    if (( row <= L )); then
+      _EYES_CUR[row]=$LID_CLOSED_GRAY
+    else
+      _EYES_CUR[row]=${REST_GRAY[row]}
+    fi
+  done
+}
+
+_eyes_animate() {
+  typeset -ga _EYES_CUR
+  local L
+  # Lid positions: close 0->8, then open 8->0. ~16 frames.
+  # NOTE: array is named `lids`, not `path`; in zsh `path` is a special
+  # array tied to $PATH, so shadowing it here would break command lookup
+  # (sleep would fail to resolve).
+  local -a lids=(0 1 2 3 4 5 6 7 8 7 6 5 4 3 2 1 0)
+  local first=1
+  # Hide the cursor during the animation. A visible (often block) cursor
+  # flickers through column 0 as each frame repaints via cursor-up. Restore
+  # it on any exit/interrupt so we never leave the terminal cursorless.
+  printf "\e[?25l"
+  trap 'printf "\e[?25h"' EXIT INT TERM
+  for L in $lids; do
+    (( first )) || printf "\e[${EYE_H}F"   # up EYE_H lines, to column 0, to repaint
+    first=0
+    _eyes_grays_for_lid $L
+    _eyes_frame _EYES_CUR
+    sleep 0.025
+  done
+  printf "\e[?25h"
+  trap - EXIT INT TERM
+}
+
+# Total rendered width: left margin plus two eyes plus the gap between them.
+typeset -i total_w=$(( ${#PAD} + EYE_W * 2 + ${#GAP} ))
+# Terminal width; safe under `no_unset` and when stdout is not a TTY.
+typeset -i term_w=${COLUMNS:-80}
+# A width of 0 (non-TTY / unknown) is treated as wide enough.
+(( term_w == 0 )) && term_w=$total_w
+
+# Animate only when truecolor is available AND the terminal is wide enough
+# to hold the art without wrapping (wrapping breaks the cursor-up repaint).
+if [[ "${COLORTERM-}" == (truecolor|24bit) ]] && (( term_w >= total_w )); then
+  _eyes_animate
+else
+  _eyes_frame REST_GRAY
+fi

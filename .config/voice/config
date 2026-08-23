@@ -1,0 +1,7 @@
+# Dictation config. Sourced by ~/.local/bin/voice-toggle.
+# Single English whisper model; change here without touching the script.
+WHISPER_MODEL=small.en
+WHISPER_SRC="$HOME/.local/src/whisper.cpp"
+WHISPER_BIN="$WHISPER_SRC/build/bin/whisper-cli"
+WHISPER_MODELS_DIR="$WHISPER_SRC/models"
+VOICE_SAMPLE_RATE=16000

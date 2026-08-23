@@ -1,0 +1,13 @@
+**/.idea/
+**/mystuff/
+/.sbsync/
+/bin/sbsync
+.ac-php-conf.json
+.phpunit.result.cache
+.venv
+.env
+.worktrees
+.gitconfig.local
+**/vite.config.ts
+**/docs/superpowers
+**/__pycache__/

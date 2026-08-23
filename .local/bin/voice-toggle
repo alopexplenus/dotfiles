@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+CFG="$HOME/.config/voice/config"
+[ -r "$CFG" ] && . "$CFG"
+: "${WHISPER_MODEL:=small.en}"
+: "${WHISPER_BIN:=$HOME/.local/src/whisper.cpp/build/bin/whisper-cli}"
+: "${WHISPER_MODELS_DIR:=$HOME/.local/src/whisper.cpp/models}"
+: "${VOICE_SAMPLE_RATE:=16000}"
+
+STATE="${XDG_RUNTIME_DIR:-/tmp}/voice"
+mkdir -p "$STATE"
+WAV="$STATE/rec.wav"
+PIDFILE="$STATE/rec.pid"
+MODEL="$WHISPER_MODELS_DIR/ggml-$WHISPER_MODEL.bin"
+
+notify() { command -v notify-send >/dev/null 2>&1 && notify-send -t 2000 "Dictation" "$1" || true; }
+
+# Stop path: a recording is in progress.
+if [ -f "$PIDFILE" ] && kill -0 "$(cat "$PIDFILE")" 2>/dev/null; then
+  kill "$(cat "$PIDFILE")" 2>/dev/null || true
+  rm -f "$PIDFILE"
+  notify "Transcribing…"
+  "$WHISPER_BIN" -m "$MODEL" -f "$WAV" -l en -nt -otxt -of "$STATE/rec" >/dev/null 2>&1 \
+    || { notify "Transcription failed"; exit 1; }
+  TEXT="$(tr '\n' ' ' < "$STATE/rec.txt" | sed 's/^ *//; s/ *$//')"
+  rm -f "$WAV" "$STATE/rec.txt"   # transcript captured; drop temp audio/text (kept on failure for debugging)
+  [ -z "$TEXT" ] && { notify "No speech detected"; exit 0; }
+  xdotool type --clearmodifiers -- "$TEXT"   # types at cursor
+  xdotool key --clearmodifiers Return        # presses Enter
+  notify "Inserted"
+  exit 0
+fi
+
+# Start path: begin recording.
+notify "Recording… (press hotkey again to stop)"
+pw-record --rate "$VOICE_SAMPLE_RATE" --channels 1 --format s16 "$WAV" &
+echo $! > "$PIDFILE"
