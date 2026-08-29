@@ -10,4 +10,5 @@
 .gitconfig.local
 **/vite.config.ts
 **/docs/superpowers
+.superpowers
 **/__pycache__/
