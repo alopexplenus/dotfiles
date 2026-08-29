@@ -1,7 +1,5 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "plugin": ["superpowers@git+https://github.com/obra/superpowers.git", "opencode-notify"],
-  "model": "claude-sonnet-4-6",
   "share": "disabled",
   "lsp": {
     "pyright": {

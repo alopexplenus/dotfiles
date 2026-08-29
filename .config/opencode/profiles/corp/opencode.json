@@ -1,5 +1,6 @@
 {
   "$schema": "https://opencode.ai/config.json",
+  "plugin": ["superpowers@git+https://github.com/obra/superpowers.git", "opencode-notify"],
   "instructions": [
     "~/.config/opencode/instructions/common.md",
     "~/.config/opencode/instructions/corp.md"
