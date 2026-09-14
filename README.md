@@ -38,7 +38,9 @@ yadm will lay the files down in your home directory. Review before applying.
 Common files are tracked at their normal paths. Desktop-only files use yadm's
 `##class.desktop` alternate suffix and are materialized only for the `desktop`
 class. The current desktop-only files are the tmux pair, Tilda configuration
-and autostart, monitor movement, the `tm` and `wk` workstation helpers, and
+and autostart (`tilda.desktop##class.desktop,extension` avoids systemd treating
+the alternate source as a second autostart entry), monitor movement, the `tm`
+and `wk` workstation helpers, and
 voice dictation configuration and tooling. `eyes` and `gdo` remain common.
 
 Set the local class before materializing alternates:
