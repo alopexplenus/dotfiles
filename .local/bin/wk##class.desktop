@@ -56,7 +56,10 @@ makewindow(){
 
 make_oc_window(){
     local proj_dir=~/projects/$2
-    tmux neww -n "$2-oc" -t "$1:" "cd $proj_dir && opencode; /usr/bin/zsh"
+    # Start an interactive zsh in the project dir and launch opencode from it,
+    # so opencode gets proper job control (Ctrl+Z / fg work as expected).
+    tmux neww -n "$2-oc" -t "$1:" -c "$proj_dir"
+    tmux send-keys -t "$1:$2-oc" "opencode" Enter
 }
 
 session=$(whoami)
