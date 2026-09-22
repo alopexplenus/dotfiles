@@ -87,7 +87,7 @@ end
 # Do not allow accidental force pushes; use --force-with-lease instead.
 function git
     if test "$argv[1]" = push; and test (count $argv) -gt 1
-        if string match -q -- '-f*' "$argv[2]"; or string match -q -- '--force*' "$argv[2]"
+        if string match -q -- '-f*' "$argv[2]"; or string match -q -- --force "$argv[2]"
             echo 'Use --force-with-lease instead'
             return 1
         end
