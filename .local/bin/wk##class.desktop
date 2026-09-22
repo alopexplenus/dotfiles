@@ -54,19 +54,10 @@ makewindow(){
 
 }
 
-make_oc_window(){
-    local proj_dir=~/projects/$2
-    # Start an interactive zsh in the project dir and launch opencode from it,
-    # so opencode gets proper job control (Ctrl+Z / fg work as expected).
-    tmux neww -n "$2-oc" -t "$1:" -c "$proj_dir"
-    tmux send-keys -t "$1:$2-oc" "opencode" Enter
-}
-
 session=$(whoami)
 
 if [ "$#" -gt 0  ]; then
     window_exists $session "$1" || makewindow $session "$1"
-    window_exists $session "$1-oc" || make_oc_window $session "$1"
   else
     # echo "Script has not received any arguments, trying to open project based on current dir"
     if [ -d "mystuff"  ] && [ -f "mystuff/wk.sh"  ]; then
