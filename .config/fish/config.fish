@@ -44,26 +44,6 @@ function gsa
     test -n "$stash"; and git stash apply $stash
 end
 
-# Cycle to the next active background job.
-function swtch
-    set -l jobs_output (jobs -c)
-    set -l job_ids (string match -ra '^\[(\d+)\]' -- $jobs_output | string match -r '\d+')
-    if test (count $job_ids) -eq 0
-        echo 'swtch: no active jobs' >&2
-        return 1
-    end
-
-    set -l current (string match -r '^\[(\d+)\].*\+' -- $jobs_output | string match -r '\d+')
-    set -l next $job_ids[1]
-    for index in (seq (count $job_ids))
-        if test "$job_ids[$index]" = "$current"
-            set next $job_ids[(math "$index % (count $job_ids) + 1")]
-            break
-        end
-    end
-    fg %$next
-end
-
 # OpenCode mode launcher. A repo can pin its mode in .ocmode.
 function oc
     set -l modes corp hack
