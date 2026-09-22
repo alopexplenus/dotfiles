@@ -137,11 +137,6 @@ alias fix="./run lint --fix"
 
 alias ww="cd ~/notes && tmux rename-window notes; vim \$(cat .latest_weekly_note)"
 
-session=$(whoami)
-sed -rn "s/^\s*Host\s+(.*)\s*/\1/ip" ~/.ssh/config | while read host; do 
-    alias $host="ssh $host -t \"export HISTFILE=~/.bash_history_$session; tmux  -L $session new-session -A -s $session \""
-done
-
 
 # Source fzf key bindings
 source /usr/share/fzf/key-bindings.zsh

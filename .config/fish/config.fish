@@ -110,13 +110,3 @@ end
 if type -q direnv
     direnv hook fish | source
 end
-
-# Define SSH/tmux helpers for hosts listed in the local SSH config.
-if test -r ~/.ssh/config
-    for host in (string match -r '^Host\s+([^*?\s]+)' ~/.ssh/config | string replace -r '^Host\s+' '')
-        function $host
-            set -l session (whoami)
-            ssh $host -t "export HISTFILE=~/.bash_history_$session; tmux -L $session new-session -A -s $session"
-        end
-    end
-end
