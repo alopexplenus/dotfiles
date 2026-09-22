@@ -5,6 +5,11 @@ if test -r /usr/share/cachyos-fish-config/cachyos-config.fish
     source /usr/share/cachyos-fish-config/cachyos-config.fish
 end
 
+# Replace the CachyOS fastfetch greeting with a compact timestamped line.
+function fish_greeting
+    echo (whoami)@(hostname) (date '+%Y-%m-%d %H:%M')
+end
+
 # General command shortcuts.
 alias l 'ls -lAh'
 alias ll 'ls -lh'
