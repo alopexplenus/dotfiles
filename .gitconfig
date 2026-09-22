@@ -4,6 +4,7 @@
     excludesFile = ~/.gitignore_global
     pager = delta
     hooksPath = ~/.config/git/hooks
+    editor = vim
 [interactive]
     diffFilter = delta  --syntax-theme 1337
 [delta]
