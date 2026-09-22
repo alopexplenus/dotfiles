@@ -22,6 +22,18 @@ init_notes(){
     tmux neww  -k -n notes -t $1: "cd ~/notes; git pull;  /usr/bin/zsh"
 }
 
+init_herdr(){
+    local herdr_command="herdr"
+
+    # Remote mode relies on a Host devbox entry in the SSH config.
+    # ssh -G evaluates the config without opening a connection.
+    if ssh -G -v devbox 2>&1 >/dev/null | grep -q 'Applying options for devbox'; then
+        herdr_command="herdr --remote devbox"
+    fi
+
+    tmux neww  -k -n HERDR -t $1: "$herdr_command; /usr/bin/zsh"
+}
+
 init_session(){
     tmux new-session -d -s $1;
     tmux rename-window -t $1:1 'o_0';
@@ -32,6 +44,6 @@ init_session(){
 tmux has-session -t $session 2>/dev/null || init_session $session;
 
 window_exists $session "notes" || init_notes $session 
+window_exists $session "HERDR" || init_herdr $session
 
 tmux attach -t $session
-
