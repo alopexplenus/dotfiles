@@ -1,0 +1,6 @@
+# Profile settings for fish
+
+# User-owned executables and global Node packages
+fish_add_path ~/.local/bin ~/.npm-global/bin ~/.opencode/bin
+
+set -gx EDITOR vim
