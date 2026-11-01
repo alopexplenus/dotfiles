@@ -12,3 +12,5 @@
 **/docs/superpowers
 .superpowers
 **/__pycache__/
+
+**/.claude/settings.local.json
