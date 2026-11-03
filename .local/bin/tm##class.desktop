@@ -31,7 +31,9 @@ init_herdr(){
         herdr_command="herdr --remote devbox"
     fi
 
-    tmux neww  -k -n HERDR -t $1: "$herdr_command; /usr/bin/zsh"
+    # Retry every 5s while herdr exits non-zero (failure / lost connection).
+    # A clean exit (quit) or Ctrl-C during the wait falls through to zsh.
+    tmux neww  -k -n HERDR -t $1: "(until $herdr_command; do echo 'herdr exited, reconnecting in 5s (Ctrl-C to stop)...'; sleep 5; done); /usr/bin/zsh"
 }
 
 init_session(){
