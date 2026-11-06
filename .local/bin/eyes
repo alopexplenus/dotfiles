@@ -89,12 +89,14 @@ _eyes_animate() {
   # array tied to $PATH, so shadowing it here would break command lookup
   # (sleep would fail to resolve).
   local -a lids=(0 1 2 3 4 5 6 7 8 7 6 5 4 3 2 1 0)
+  # $1 = "repaint": the art is already on screen, so start by moving back up.
   local first=1
+  [[ "${1-}" == repaint ]] && first=0
   # Hide the cursor during the animation. A visible (often block) cursor
   # flickers through column 0 as each frame repaints via cursor-up. Restore
   # it on any exit/interrupt so we never leave the terminal cursorless.
   printf "\e[?25l"
-  trap 'printf "\e[?25h"' EXIT INT TERM
+  trap 'printf "\e[?25h"' EXIT; trap 'exit 130' INT TERM
   for L in $lids; do
     (( first )) || printf "\e[${EYE_H}F"   # up EYE_H lines, to column 0, to repaint
     first=0
@@ -102,9 +104,15 @@ _eyes_animate() {
     _eyes_frame _EYES_CUR
     sleep 0.025
   done
+  # In loop mode the caller owns the cursor; otherwise restore it here.
+  (( loop )) && return
   printf "\e[?25h"
   trap - EXIT INT TERM
 }
+
+# --loop: double blink, 4s pause, repeat forever (Ctrl-C to stop).
+typeset -i loop=0
+[[ "${1-}" == --loop ]] && loop=1
 
 # Total rendered width: left margin plus two eyes plus the gap between them.
 typeset -i total_w=$(( ${#PAD} + EYE_W * 2 + ${#GAP} ))
@@ -116,7 +124,18 @@ typeset -i term_w=${COLUMNS:-80}
 # Animate only when truecolor is available AND the terminal is wide enough
 # to hold the art without wrapping (wrapping breaks the cursor-up repaint).
 if [[ "${COLORTERM-}" == (truecolor|24bit) ]] && (( term_w >= total_w )); then
-  _eyes_animate
+  if (( loop )); then
+    printf "\e[?25l"
+    trap 'printf "\e[?25h"' EXIT; trap 'exit 130' INT TERM
+    _eyes_animate
+    while true; do
+      _eyes_animate repaint
+      sleep 4
+      _eyes_animate repaint
+    done
+  else
+    _eyes_animate
+  fi
 else
   _eyes_frame REST_GRAY
 fi
